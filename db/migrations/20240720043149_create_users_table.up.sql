@@ -1,9 +1,12 @@
-CREATE TABLE customers (
+CREATE TABLE users (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(100),
+  fullname VARCHAR(150),
+  username VARCHAR(100),
   email VARCHAR(255) UNIQUE NOT NULL,
   phone VARCHAR(20),
   address TEXT,
+  hashed_password varchar(250) NOT NULL,
+  password_changed_at TIMESTAMP,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

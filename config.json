@@ -1,0 +1,24 @@
+{
+  "app":{
+    "name": "go-esb-test"
+  },
+  "web":{
+    "prefork": false,
+    "port": 3000
+  },
+  "log":{
+    "level": 6
+  },
+  "database": {
+    "username": "root",
+    "password": "secret",
+    "host": "127.0.0.1",
+    "port": "3307",
+    "name": "go_esb",
+    "pool":{
+      "idle":10,
+      "max":100,
+      "lifetime":300
+    }
+  }
+}
