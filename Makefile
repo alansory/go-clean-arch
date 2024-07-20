@@ -39,4 +39,8 @@ migrate_up:
 migrate_down:
 	migrate -database "mysql://root:secret@tcp(127.0.0.1:3307)/go_esb" -path db/migrations down
 
-.PHONY: pull_mysql stop_remove_mysql create_volume remove_volume run_mysql createdb dropdb migrate_create migrate_up migrate_down
+# Run server
+run_server:
+	go run cmd/web/main.go 
+
+.PHONY: pull_mysql stop_remove_mysql create_volume remove_volume run_mysql createdb dropdb migrate_create migrate_up migrate_down run_server

@@ -18,6 +18,8 @@ func (c *RouteConfig) Setup() {
 
 func (c *RouteConfig) SetupGuestRoute() {
 	c.App.Post("/invoices", c.InvoiceController.Create)
+	c.App.Get("/invoices/:id", c.InvoiceController.Get)
+	c.App.Delete("/invoices/:id", c.InvoiceController.Delete)
 }
 
 func (c *RouteConfig) SetupAuthRoute() {

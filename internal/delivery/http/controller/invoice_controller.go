@@ -34,5 +34,25 @@ func (c *InvoiceController) Create(ctx *fiber.Ctx) error {
 		return util.ErrorResponse(err, ctx)
 	}
 
-	return util.SuccessResponse("Created.", response, ctx)
+	return util.SuccessResponse("Invoice created successfully..", response, ctx)
+}
+
+func (c *InvoiceController) Get(ctx *fiber.Ctx) error {
+	response, err := c.UseCase.Get(ctx)
+	if err != nil {
+		c.Log.WithError(err).Error("error getting invoice")
+		return util.ErrorResponse(err, ctx)
+	}
+
+	return util.SuccessResponse("Invoice details retrieved successfully.", response, ctx)
+}
+
+func (c *InvoiceController) Delete(ctx *fiber.Ctx) error {
+	_, err := c.UseCase.Delete(ctx)
+	if err != nil {
+		c.Log.WithError(err).Error("error deleting invoice")
+		return util.ErrorResponse(err, ctx)
+	}
+
+	return util.SuccessResponse("Invoice deleted successfully.", nil, ctx)
 }

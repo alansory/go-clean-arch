@@ -7,8 +7,10 @@ import (
 	"go-esb-test/internal/model/converter"
 	"go-esb-test/internal/repository"
 	"go-esb-test/internal/util"
+	"strconv"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/gofiber/fiber/v2"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
@@ -102,6 +104,40 @@ func (c *InvoiceUseCase) Create(ctx context.Context, request *model.InvoiceReque
 
 	if err := tx.Commit().Error; err != nil {
 		c.Log.WithError(err).Error("failed to commit transaction")
+		return nil, err
+	}
+
+	return converter.InvoiceToResponse(invoice), nil
+}
+
+func (c *InvoiceUseCase) Get(ctx *fiber.Ctx) (*model.InvoiceResponse, error) {
+	idStr := ctx.Params("id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		c.Log.WithError(err).Error("invalid id")
+		return nil, err
+	}
+
+	invoice := new(entity.Invoice)
+	if err := c.InvoiceRepository.FindById(c.DB, invoice, id, "Customer", "InvoiceItems.Item"); err != nil {
+		c.Log.WithError(err).Error("error getting invoice")
+		return nil, err
+	}
+
+	return converter.InvoiceToResponse(invoice), nil
+}
+
+func (c *InvoiceUseCase) Delete(ctx *fiber.Ctx) (*model.InvoiceResponse, error) {
+	idStr := ctx.Params("id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		c.Log.WithError(err).Error("invalid id")
+		return nil, err
+	}
+
+	invoice := new(entity.Invoice)
+	if err := c.InvoiceRepository.Delete(c.DB, invoice, id); err != nil {
+		c.Log.WithError(err).Error("error deleting invoice")
 		return nil, err
 	}
 

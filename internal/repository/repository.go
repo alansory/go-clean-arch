@@ -14,8 +14,8 @@ func (r *Repository[T]) Update(db *gorm.DB, entity *T) error {
 	return db.Save(entity).Error
 }
 
-func (r *Repository[T]) Delete(db *gorm.DB, entity *T) error {
-	return db.Delete(entity).Error
+func (r *Repository[T]) Delete(db *gorm.DB, entity *T, id int64) error {
+	return db.Where("id = ?", id).Delete(entity).Error
 }
 
 func (r *Repository[T]) CountById(db *gorm.DB, id int64) (int64, error) {
