@@ -24,32 +24,19 @@ func SuccessResponse(message string, data interface{}, paging *model.PageMetadat
 
 func ErrorResponse(err error, ctx *fiber.Ctx) error {
 	var statusCode int
+	var errorMessage string
+	var errors map[string]string
 
 	// Determine the status code based on the error type
 	switch e := err.(type) {
 	case *fiber.Error:
 		statusCode = e.Code
+		errorMessage = e.Message
 	case validator.ValidationErrors:
 		statusCode = fiber.StatusUnprocessableEntity
-	default:
-		statusCode = fiber.StatusInternalServerError
-	}
-
-	report := fiber.Map{
-		"error": fiber.Map{
-			"status_code": statusCode,
-			"message":     err.Error(),
-		},
-	}
-
-	switch v := err.(type) {
-	case validator.ValidationErrors:
-		statusCode = fiber.StatusUnprocessableEntity
-		report["error"].(fiber.Map)["status_code"] = statusCode
-		report["error"].(fiber.Map)["message"] = "422 Unprocessable Entity"
-		errors := make(map[string]string)
-
-		for _, validationErr := range v {
+		errorMessage = "422 Unprocessable Entity"
+		errors = make(map[string]string)
+		for _, validationErr := range e {
 			field := toSnakeCase(validationErr.Field())
 			switch validationErr.Tag() {
 			case "required":
@@ -64,13 +51,26 @@ func ErrorResponse(err error, ctx *fiber.Ctx) error {
 				errors[field] = fmt.Sprintf("The %s field value must be lower than %s", field, validationErr.Param())
 			}
 		}
-		report["error"].(fiber.Map)["errors"] = errors
-	case error:
-		if err.Error() == "EOF" {
-			statusCode = fiber.StatusBadRequest
-			report["error"].(fiber.Map)["status_code"] = statusCode
-			report["error"].(fiber.Map)["message"] = "JSON data is missing or malformed"
-		}
+	default:
+		statusCode = fiber.StatusInternalServerError
+		errorMessage = "Internal Server Error"
+	}
+
+	if err.Error() == "EOF" {
+		statusCode = fiber.StatusBadRequest
+		errorMessage = "JSON data is missing or malformed"
+	}
+
+	report := model.ErrorResponse{
+		Error: struct {
+			StatusCode int               `json:"status_code"`
+			Message    string            `json:"message"`
+			Errors     map[string]string `json:"errors,omitempty"`
+		}{
+			StatusCode: statusCode,
+			Message:    errorMessage,
+			Errors:     errors,
+		},
 	}
 
 	return ctx.Status(statusCode).JSON(report)

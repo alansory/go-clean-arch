@@ -39,6 +39,10 @@ migrate_up:
 migrate_down:
 	migrate -database "mysql://root:secret@tcp(127.0.0.1:3307)/go_esb" -path db/migrations down
 
+# seed users & items
+seed:
+	go run db/seeds/users_items.go
+
 # Define the command to run the API server
 run:
 	go run cmd/web/main.go
@@ -55,4 +59,7 @@ clean:
 server: clean build
 	./bin/server
 
-.PHONY: pull_mysql stop_remove_mysql create_volume remove_volume run_mysql createdb dropdb migrate_create migrate_up migrate_down run build clean server
+test:
+	go test -v --cover ./test
+
+.PHONY: pull_mysql stop_remove_mysql create_volume remove_volume run_mysql createdb dropdb migrate_create migrate_up migrate_down run build clean server test

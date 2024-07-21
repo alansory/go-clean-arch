@@ -7,6 +7,14 @@ type SuccessResponse struct {
 	StatusCode int           `json:"status_code"`
 }
 
+type ErrorResponse struct {
+	Error struct {
+		StatusCode int               `json:"status_code"`
+		Message    string            `json:"message"`
+		Errors     map[string]string `json:"errors,omitempty"`
+	} `json:"error"`
+}
+
 type PageMetadata struct {
 	Page      int   `json:"page"`
 	PerPage   int   `json:"per_page"`
