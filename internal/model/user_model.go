@@ -12,3 +12,13 @@ type UserResponse struct {
 	CreatedAt *time.Time `json:"created_at"`
 	UpdatedAt *time.Time `json:"updated_at"`
 }
+
+type SearchUserRequest struct {
+	Fullname string `json:"fullname"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Phone    string `json:"phone"`
+	Address  string `json:"address"`
+	Page     int    `json:"page"`
+	PerPage  int    `json:"per_page"`
+}

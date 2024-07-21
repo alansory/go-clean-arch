@@ -9,6 +9,8 @@ import (
 type RouteConfig struct {
 	App               *fiber.App
 	InvoiceController *controller.InvoiceController
+	UserController    *controller.UserController
+	ItemController    *controller.ItemController
 }
 
 func (c *RouteConfig) Setup() {
@@ -17,11 +19,22 @@ func (c *RouteConfig) Setup() {
 }
 
 func (c *RouteConfig) SetupGuestRoute() {
-	c.App.Get("/invoices", c.InvoiceController.List)
-	c.App.Get("/invoices/:id", c.InvoiceController.Get)
-	c.App.Post("/invoices", c.InvoiceController.Create)
-	c.App.Put("/invoices/:id", c.InvoiceController.Update)
-	c.App.Delete("/invoices/:id", c.InvoiceController.Delete)
+	// invoices routes
+	invoices := c.App.Group("/invoices")
+	{
+		invoices.Get("", c.InvoiceController.List)
+		invoices.Get("/:id", c.InvoiceController.Get)
+		invoices.Post("", c.InvoiceController.Create)
+		invoices.Put("/:id", c.InvoiceController.Update)
+		invoices.Delete("/:id", c.InvoiceController.Delete)
+	}
+
+	// users routes
+	c.App.Get("/users", c.UserController.List)
+
+	// items routes
+	c.App.Get("/items", c.ItemController.List)
+
 }
 
 func (c *RouteConfig) SetupAuthRoute() {

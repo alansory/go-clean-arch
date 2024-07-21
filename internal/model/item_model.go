@@ -17,3 +17,10 @@ type ItemRequest struct {
 	Quantity  int     `json:"quantity" validate:"required"`
 	UnitPrice float64 `json:"unit_price" validate:"required"`
 }
+
+type SearchItemRequest struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Page        int    `json:"page"`
+	PerPage     int    `json:"per_page"`
+}

@@ -24,20 +24,27 @@ type BootstrapConfig struct {
 func Bootstrap(config *BootstrapConfig) {
 	// setup repositories
 	invoiceRepository := repository.NewInvoiceRepository(config.Log)
+	itemRepository := repository.NewItemRepository(config.Log)
 	userRepository := repository.NewUserRepository(config.Log)
 	invoiceItemRepository := repository.NewInvoiceItemRepository(config.Log)
 
 	// setup use cases
 	invoiceUseCase := usecase.NewInvoiceUseCase(config.DB, config.Log, config.Validate, invoiceRepository, userRepository, invoiceItemRepository)
+	userUseCase := usecase.NewUserUseCase(config.DB, config.Log, config.Validate, userRepository)
+	itemUseCase := usecase.NewItemUseCase(config.DB, config.Log, config.Validate, itemRepository)
 
 	// setup controller
 	invoiceController := controller.NewInvoiceController(invoiceUseCase, config.Log)
+	userController := controller.NewUserController(userUseCase, config.Log)
+	itemController := controller.NewItemController(itemUseCase, config.Log)
 
 	// setup middleware
 
 	routeConfig := route.RouteConfig{
 		App:               config.App,
 		InvoiceController: invoiceController,
+		UserController:    userController,
+		ItemController:    itemController,
 	}
 
 	routeConfig.Setup()
