@@ -17,8 +17,10 @@ func (c *RouteConfig) Setup() {
 }
 
 func (c *RouteConfig) SetupGuestRoute() {
-	c.App.Post("/invoices", c.InvoiceController.Create)
+	c.App.Get("/invoices", c.InvoiceController.List)
 	c.App.Get("/invoices/:id", c.InvoiceController.Get)
+	c.App.Post("/invoices", c.InvoiceController.Create)
+	// c.App.Put("/invoices/:id", c.InvoiceController.Update)
 	c.App.Delete("/invoices/:id", c.InvoiceController.Delete)
 }
 

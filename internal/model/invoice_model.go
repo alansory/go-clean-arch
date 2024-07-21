@@ -26,3 +26,15 @@ type InvoiceRequest struct {
 	Status         string        `json:"status" validate:"required,oneof=paid unpaid"`
 	Items          []ItemRequest `json:"items" validate:"required,dive,required"`
 }
+
+type SearchInvoiceRequest struct {
+	InvoiceNumber  string `json:"invoice_number"`
+	InvoiceSubject string `json:"invoice_subject"`
+	IssueDate      string `json:"issue_date"`
+	DueDate        string `json:"due_date"`
+	Status         string `json:"status"`
+	CustomerID     int64  `json:"customer_id"`
+	CustomerName   string `json:"customer_name"`
+	Page           int    `json:"page"`
+	PerPage        int    `json:"per_page"`
+}

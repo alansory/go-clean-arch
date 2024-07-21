@@ -42,6 +42,21 @@ func NewInvoiceUseCase(
 	}
 }
 
+func (c *InvoiceUseCase) List(ctx context.Context, request *model.SearchInvoiceRequest) ([]model.InvoiceResponse, int64, error) {
+	invoices, total, err := c.InvoiceRepository.Search(c.DB, request)
+	if err != nil {
+		c.Log.WithError(err).Error("error getting invoices")
+		return nil, 0, err
+	}
+
+	responses := make([]model.InvoiceResponse, len(invoices))
+	for i, invoice := range invoices {
+		responses[i] = *converter.InvoiceToResponse(&invoice)
+	}
+
+	return responses, total, nil
+}
+
 func (c *InvoiceUseCase) Create(ctx context.Context, request *model.InvoiceRequest) (*model.InvoiceResponse, error) {
 	tx := c.DB.WithContext(ctx).Begin()
 	defer tx.Rollback()

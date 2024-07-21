@@ -2,18 +2,21 @@ package util
 
 import (
 	"fmt"
+	"go-esb-test/internal/model"
 	"strings"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 )
 
-func SuccessResponse(message string, data interface{}, ctx *fiber.Ctx) error {
+func SuccessResponse(message string, data interface{}, paging *model.PageMetadata, ctx *fiber.Ctx) error {
 	statusCode := fiber.StatusOK
-	result := fiber.Map{
-		"data":        data,
-		"status_code": statusCode,
-		"message":     message,
+
+	result := model.SuccessResponse{
+		Data:       data,
+		Paging:     paging,
+		Message:    message,
+		StatusCode: statusCode,
 	}
 
 	return ctx.Status(statusCode).JSON(result)
