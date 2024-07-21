@@ -39,8 +39,20 @@ migrate_up:
 migrate_down:
 	migrate -database "mysql://root:secret@tcp(127.0.0.1:3307)/go_esb" -path db/migrations down
 
-# Run server
-run_server:
-	go run cmd/web/main.go 
+# Define the command to run the API server
+run:
+	go run cmd/web/main.go
 
-.PHONY: pull_mysql stop_remove_mysql create_volume remove_volume run_mysql createdb dropdb migrate_create migrate_up migrate_down run_server
+# Define a target to build the project (if needed)
+build:
+	go build -o bin/server cmd/web/main.go
+
+# Define a target to clean up build artifacts
+clean:
+	rm -f bin/server
+
+# Define a target to run the server
+server: clean build
+	./bin/server
+
+.PHONY: pull_mysql stop_remove_mysql create_volume remove_volume run_mysql createdb dropdb migrate_create migrate_up migrate_down run build clean server

@@ -57,6 +57,23 @@ func (c *InvoiceUseCase) List(ctx context.Context, request *model.SearchInvoiceR
 	return responses, total, nil
 }
 
+func (c *InvoiceUseCase) Get(ctx *fiber.Ctx) (*model.InvoiceResponse, error) {
+	idStr := ctx.Params("id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		c.Log.WithError(err).Error("invalid id")
+		return nil, err
+	}
+
+	invoice := new(entity.Invoice)
+	if err := c.InvoiceRepository.FindById(c.DB, invoice, id, "Customer", "InvoiceItems.Item"); err != nil {
+		c.Log.WithError(err).Error("error getting invoice")
+		return nil, err
+	}
+
+	return converter.InvoiceToResponse(invoice), nil
+}
+
 func (c *InvoiceUseCase) Create(ctx context.Context, request *model.InvoiceRequest) (*model.InvoiceResponse, error) {
 	tx := c.DB.WithContext(ctx).Begin()
 	defer tx.Rollback()
@@ -101,7 +118,8 @@ func (c *InvoiceUseCase) Create(ctx context.Context, request *model.InvoiceReque
 	for _, item := range request.Items {
 		invoiceItem := &entity.InvoiceItem{
 			InvoiceID: invoice.ID,
-			ItemID:    item.ID,
+			ItemID:    item.ItemID,
+			ItemName:  item.Name,
 			Quantity:  item.Quantity,
 			UnitPrice: item.UnitPrice,
 		}
@@ -125,17 +143,69 @@ func (c *InvoiceUseCase) Create(ctx context.Context, request *model.InvoiceReque
 	return converter.InvoiceToResponse(invoice), nil
 }
 
-func (c *InvoiceUseCase) Get(ctx *fiber.Ctx) (*model.InvoiceResponse, error) {
-	idStr := ctx.Params("id")
-	id, err := strconv.ParseInt(idStr, 10, 64)
-	if err != nil {
-		c.Log.WithError(err).Error("invalid id")
+func (c *InvoiceUseCase) Update(id int64, ctx context.Context, request *model.InvoiceRequest) (*model.InvoiceResponse, error) {
+	tx := c.DB.WithContext(ctx).Begin()
+	defer tx.Rollback()
+
+	invoice := new(entity.Invoice)
+	if err := c.InvoiceRepository.FindById(tx, invoice, id); err != nil {
+		c.Log.WithError(err).Error("error getting invoice")
 		return nil, err
 	}
 
-	invoice := new(entity.Invoice)
-	if err := c.InvoiceRepository.FindById(c.DB, invoice, id, "Customer", "InvoiceItems.Item"); err != nil {
-		c.Log.WithError(err).Error("error getting invoice")
+	if err := c.Validate.Struct(request); err != nil {
+		c.Log.WithError(err).Error("failed to validate request body")
+		return nil, err
+	}
+
+	customer := new(entity.User)
+	if err := c.UserRepository.FindById(tx, customer, request.CustomerID); err != nil {
+		c.Log.Warnf("Failed find customer by customer_id : %+v", err)
+		return nil, err
+	}
+
+	if request.Status == "" {
+		request.Status = invoice.Status
+	}
+
+	invoice.InvoiceSubject = request.InvoiceSubject
+	invoice.CustomerID = customer.ID
+	invoice.CustomerName = customer.Fullname
+	invoice.CustomerAddress = customer.Address
+	invoice.IssueDate = request.IssueDate
+	invoice.DueDate = request.DueDate
+	invoice.Status = request.Status
+
+	if err := c.InvoiceRepository.Update(tx, invoice); err != nil {
+		c.Log.WithError(err).Error("failed to create invoice")
+		return nil, err
+	}
+
+	for _, item := range request.Items {
+		invoiceItem := new(entity.InvoiceItem)
+		if err := c.InvoiceItemRepository.FindByIdAndInvoiceId(tx, invoiceItem, item.ID, invoice.ID); err != nil {
+			c.Log.WithError(err).Error("error getting invoice item")
+			return nil, err
+		}
+
+		invoiceItem.ItemID = item.ItemID
+		invoiceItem.ItemName = item.Name
+		invoiceItem.Quantity = item.Quantity
+		invoiceItem.UnitPrice = item.UnitPrice
+
+		if err := c.InvoiceItemRepository.Update(tx, invoiceItem); err != nil {
+			c.Log.WithError(err).Error("failed to create invoice item")
+			return nil, err
+		}
+	}
+
+	if err := c.InvoiceRepository.FindById(tx, invoice, invoice.ID, "Customer", "InvoiceItems.Item"); err != nil {
+		c.Log.WithError(err).Error("failed to reload invoice with items")
+		return nil, err
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		c.Log.WithError(err).Error("failed to commit transaction")
 		return nil, err
 	}
 

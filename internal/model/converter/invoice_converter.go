@@ -6,6 +6,11 @@ import (
 )
 
 func InvoiceToResponse(invoice *entity.Invoice) *model.InvoiceResponse {
+	var subTotal float64
+	for _, item := range invoice.InvoiceItems {
+		subTotal += float64(item.Quantity) * item.UnitPrice
+	}
+
 	return &model.InvoiceResponse{
 		ID:              invoice.ID,
 		InvoiceNumber:   invoice.InvoiceNumber,
@@ -20,5 +25,7 @@ func InvoiceToResponse(invoice *entity.Invoice) *model.InvoiceResponse {
 		UpdatedAt:       invoice.UpdatedAt,
 		Customer:        UserToResponse(&invoice.Customer),
 		InvoiceItems:    InvoiceItemsToResponse(invoice.InvoiceItems),
+		TotalItems:      len(invoice.InvoiceItems),
+		SubTotal:        subTotal,
 	}
 }

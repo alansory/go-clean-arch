@@ -11,7 +11,6 @@ type User struct {
 	Address           string     `gorm:"column:address"`
 	HashedPassword    string     `gorm:"column:hashed_password"`
 	PasswordChangedAt *time.Time `gorm:"column:password_changed_at"`
-	CustomerAddress   string     `gorm:"column:customer_address"`
 	CreatedAt         *time.Time `gorm:"column:created_at"`
 	UpdatedAt         *time.Time `gorm:"column:updated_at"`
 }

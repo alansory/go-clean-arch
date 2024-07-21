@@ -10,6 +10,7 @@ func InvoiceItemToResponse(item *entity.InvoiceItem) *model.InvoiceItemResponse 
 		ID:        item.ID,
 		InvoiceID: item.InvoiceID,
 		ItemID:    item.ItemID,
+		ItemName:  item.ItemName,
 		Quantity:  item.Quantity,
 		UnitPrice: item.UnitPrice,
 		CreatedAt: item.CreatedAt,

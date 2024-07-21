@@ -16,6 +16,8 @@ type InvoiceResponse struct {
 	UpdatedAt       *time.Time             `json:"updated_at"`
 	Customer        *UserResponse          `json:"customer"`
 	InvoiceItems    []*InvoiceItemResponse `json:"invoice_items"`
+	TotalItems      int                    `json:"total_items"`
+	SubTotal        float64                `json:"sub_total"`
 }
 
 type InvoiceRequest struct {
@@ -33,8 +35,8 @@ type SearchInvoiceRequest struct {
 	IssueDate      string `json:"issue_date"`
 	DueDate        string `json:"due_date"`
 	Status         string `json:"status"`
-	CustomerID     int64  `json:"customer_id"`
 	CustomerName   string `json:"customer_name"`
+	TotalItems     int    `json:"total_items"`
 	Page           int    `json:"page"`
 	PerPage        int    `json:"per_page"`
 }

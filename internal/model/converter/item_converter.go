@@ -10,8 +10,6 @@ func ItemToResponse(item *entity.Item) *model.ItemResponse {
 		ID:          item.ID,
 		Name:        item.Name,
 		Description: item.Description,
-		Quantity:    item.Quantity,
-		UnitPrice:   item.UnitPrice,
 		CreatedAt:   item.CreatedAt,
 		UpdatedAt:   item.UpdatedAt,
 	}

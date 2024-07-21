@@ -28,14 +28,42 @@ func (r *InvoiceRepository) Search(db *gorm.DB, request *model.SearchInvoiceRequ
 		Preload("InvoiceItems.Item").
 		Preload("Customer")
 
+	if request.TotalItems > 0 {
+		subQuery := `
+			SELECT invoice_id
+			FROM invoice_items
+			GROUP BY invoice_id
+			HAVING COUNT(*) = ?
+		`
+		// Join the raw SQL subquery with the invoices
+		query = query.Joins(
+			"JOIN (?) AS subquery ON invoices.id = subquery.invoice_id",
+			db.Raw(subQuery, request.TotalItems).Table("(?)"),
+		)
+	}
+
 	if err := query.Find(&invoices).Error; err != nil {
 		return nil, 0, err
 	}
 
 	var total int64 = 0
-	if err := db.Model(&entity.Invoice{}).
-		Scopes(r.FilterInvoice(request)).
-		Count(&total).Error; err != nil {
+	totalQuery := db.Model(&entity.Invoice{}).
+		Scopes(r.FilterInvoice(request))
+
+	if request.TotalItems > 0 {
+		totalSubQuery := `
+				SELECT invoice_id
+				FROM invoice_items
+				GROUP BY invoice_id
+				HAVING COUNT(*) = ?
+			`
+		totalQuery = totalQuery.Joins(
+			"JOIN (?) AS subquery ON invoices.id = subquery.invoice_id",
+			db.Raw(totalSubQuery, request.TotalItems).Table("(?)"),
+		)
+	}
+
+	if err := totalQuery.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 
